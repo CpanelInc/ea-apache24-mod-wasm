@@ -1,9 +1,6 @@
-%global ns_name ea-apache24
-%global upstream_name mod-wasm
-
-Name: %{ns_name}-%{upstream_name}
+Name: ea-apache24-mod-wasm
 Version: 0.12.2
-Summary: Set a limit to the maximum speed available to certains users to download.
+Summary: mod_wasm is an Apache Server (httpd) extension module able to run and serve WebAssembly binaries as endpoints.
 
 # Doing release_prefix this way for Release allows for OBS-proof versioning, See EA-4556 for more details
 %define release_prefix 1

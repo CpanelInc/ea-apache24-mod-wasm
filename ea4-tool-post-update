@@ -1,0 +1,74 @@
+#!/usr/bin/env perl
+# Copyright 2024 WebPros International, LLC
+# All rights reserved.
+# copyright@cpanel.net http://cpanel.net
+# This code is subject to the cPanel license. Unauthorized copying is prohibited.
+
+package ea_apache24_mod_wasm::get_new_version;
+
+use strict;
+use warnings;
+
+use FindBin;
+use lib "../ea-tools/lib/ea4_tool";    # assumes ea-tools is checked out next to this repo
+use ea4_tool::util ();
+
+use lib '.';
+use FindWasm;
+
+use Cwd;
+
+# find-latest-version will end up downloading this tarball, but
+# I cannot depend on it being correctly setup, so it will be done
+# again and reassembled so it is correct for the build
+#
+# This is only run when a change of verion is detected
+
+my ( $best_ref, $best_version ) = FindWasm::findBestCandidate();
+
+print "Upstream is " . $best_ref->{tag_name} . "\n";
+my $version = substr( $best_ref->{tag_name}, 1 );
+
+# lets get the useful information
+
+my $tarball = $best_ref->{tag_name} . ".tar.gz";
+
+unlink($tarball);
+system( 'wget', '-O', $tarball, $best_ref->{tarball_url} );
+my $result = `tar tf $tarball | head -n 1`;
+chomp $result;
+
+my $dirname = $best_ref->{tag_name};
+system("rm -rf $dirname");
+mkdir $dirname;
+
+my @cmd = ( "tar", "xf", $tarball, "-C", $dirname, "--strip-components=1", "$result" . "LICENSE" );
+system(@cmd);
+
+@cmd = ( "tar", "xf", $tarball, "-C", $dirname, "--strip-components=1", "$result" . "README.md" );
+system(@cmd);
+
+my $cwd = getcwd();
+chdir $dirname;
+
+foreach my $xref ( @{ $best_ref->{assets} } ) {
+    next if ( $xref->{name} ne "mod_wasm.so" && $xref->{name} ne "libwasm_runtime.so" );
+
+    my $name = $xref->{name};
+    my $url  = $xref->{browser_download_url};
+
+    system( 'wget', '-O', $name, "$url" );
+}
+
+chdir $cwd;
+unlink $tarball;
+
+@cmd = ( "tar", "czf", "SOURCES/$tarball", $dirname );
+system(@cmd);
+
+@cmd = ( "rm", "-rf", $dirname );
+system(@cmd);
+
+print "New Version $version\n";
+print "SOURCES/$tarball has been created\n";
+

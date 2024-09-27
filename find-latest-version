@@ -1,0 +1,63 @@
+#!/usr/local/cpanel/3rdparty/bin/perl
+# Copyright 2024 WebPros International, LLC
+# All rights reserved.
+# copyright@cpanel.net http://cpanel.net
+# This code is subject to the cPanel license. Unauthorized copying is prohibited.
+
+package ea_apache24_mod_wasm::find_latest_version;
+
+use strict;
+use warnings;
+
+use lib "../ea-tools/lib/ea4_tool";    # assumes ea-tools is checked out next to this repo
+use ea4_tool::util ();
+
+use lib '.';
+use FindWasm;
+
+ea4_tool::util::find_latest_version( \&_get_required, \&_add_sum ) if !caller();
+
+###############
+#### helpers ##
+###############
+
+sub _get_required {
+    my ($http) = @_;
+
+    my ( $best_ref, $best_version ) = FindWasm::findBestCandidate();
+    my $version = substr( $best_ref->{tag_name}, 1 );
+
+    my $tarball = $best_ref->{tag_name} . ".tar.gz";
+
+    # The returned value will try to download the tarball, but the post script will
+    # download it again and reassemble the tarball the way it is needed, so it is a bit of
+    # a waste, but it will work
+
+    return ( $version, $best_ref->{tarball_url}, $tarball );
+}
+
+sub _add_sum {
+    my ( $http, $hr ) = @_;
+
+    # Optional: Set $hr->{tarball}{sum}{hex} and $hr->{tarball}{sum}{type} (sha256, sha1, md5, anything Digest.pm can handle)
+    #           die if there is a problem determining either of those values
+    # otherwise this is a no-op
+
+    return;
+}
+
+__END__
+
+=encoding utf-8
+
+=head1 README
+
+We can add checksum support if github releases had that information which isn’t available via:
+
+=over
+
+=item API call L<https://developer.github.com/v3/repos/releases/#get-the-latest-release>
+
+=item web view L<https://api.github.com/repos/k3s-io/k3s/releases>
+
+=back
