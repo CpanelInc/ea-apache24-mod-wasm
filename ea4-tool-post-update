@@ -34,29 +34,26 @@ use File::chdir;
 # v0.12.2/libwasm_runtime.so
 # v0.12.2/mod_wasm.so
 
-my $http = ea4_tool::util::http();
+my $json   = `./find-latest-version`;
+my $latest = ea4_tool::util::json2ref($json);
 
-my $res = $http->get("https://api.github.com/repos/vmware-labs/mod_wasm/releases");
-my $ref = ea4_tool::util::json2ref( $res->{content} );
+my $tarball     = $latest->{tarball}->{name};
+my $tarball_url = $latest->{tarball}->{url};
+my $version     = $latest->{version};
 
-my $xref    = $ref->[0];
-my $version = substr( "$xref->{tag_name}", 1 );
-
-my $tarball = $xref->{tag_name} . ".tar.gz";
-
-print "Upstream is " . $xref->{tag_name} . "\n";
+print "Upstream is " . $version . "\n";
 
 # Download the tarball
 
 unlink($tarball);
-system( 'wget', '-O', $tarball, $xref->{tarball_url} );
+system( 'wget', '-O', $tarball, $tarball_url );
 
 # Get the top directory name from the tarball
 
 my $result = `tar tf $tarball | head -n 1`;
 chomp $result;
 
-my $dirname = $xref->{tag_name};
+my $dirname = "v$version";
 system("rm -rf $dirname");
 mkdir $dirname;
 
@@ -75,13 +72,8 @@ mkdir $dirname;
 
     # Now get the 2 .so files, and skip over all else
 
-    foreach my $xref ( @{ $xref->{assets} } ) {
-        next if ( $xref->{name} ne "mod_wasm.so" && $xref->{name} ne "libwasm_runtime.so" );
-
-        my $name = $xref->{name};
-        my $url  = $xref->{browser_download_url};
-
-        system( 'wget', '-O', $name, "$url" );
+    foreach my $fname ( 'libwasm_runtime.so', 'mod_wasm.so' ) {
+        system( 'wget', '-O', $fname, "https://github.com/vmware-labs/mod_wasm/releases/download/v$version/$fname" );
     }
 }
 

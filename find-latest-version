@@ -58,6 +58,6 @@ We can add checksum support if github releases had that information which isn’
 
 =item API call L<https://developer.github.com/v3/repos/releases/#get-the-latest-release>
 
-=item web view L<https://api.github.com/repos/k3s-io/k3s/releases>
+=item web view L<https://api.github.com/repos/vmware-labs/mod_wasm/releases>
 
 =back
