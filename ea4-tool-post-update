@@ -1,0 +1,96 @@
+#!/usr/bin/env perl
+# Copyright 2024 WebPros International, LLC
+# All rights reserved.
+# copyright@cpanel.net http://cpanel.net
+# This code is subject to the cPanel license. Unauthorized copying is prohibited.
+
+package ea_apache24_mod_wasm::get_new_version;
+
+use strict;
+use warnings;
+
+use FindBin;
+use lib "../ea-tools/lib/ea4_tool";    # assumes ea-tools is checked out next to this repo
+use ea4_tool::util ();
+
+use File::chdir;
+
+# This is what is happening in here.
+#
+# The tarball provided by github, is for building.  They also offer the built .so files.
+# OUR rpm only needs the  .so files and the README and LICENSE files.
+#
+# * download the tarball
+# * download the 2 .so files
+# * extract the README and LICENSE files
+# * Create a SOURCES tarball, that contains only the 2 .so files, and the README and LICENSE files.
+# * The spec file and debify files, then can package it properly
+
+# The final product:
+# [root@alma8sandbox ea-apache24-mod-wasm]# tar tf SOURCES/v0.12.2.tar.gz
+# v0.12.2/
+# v0.12.2/LICENSE
+# v0.12.2/README.md
+# v0.12.2/libwasm_runtime.so
+# v0.12.2/mod_wasm.so
+
+my $json   = `./find-latest-version`;
+my $latest = ea4_tool::util::json2ref($json);
+
+my $tarball     = $latest->{tarball}->{name};
+my $tarball_url = $latest->{tarball}->{url};
+my $version     = $latest->{version};
+
+print "Upstream is " . $version . "\n";
+
+# Download the tarball
+
+unlink($tarball);
+system( 'wget', '-O', $tarball, $tarball_url );
+
+# Get the top directory name from the tarball
+
+my $result = `tar tf $tarball | head -n 1`;
+chomp $result;
+
+my $dirname = "v$version";
+system("rm -rf $dirname");
+mkdir $dirname;
+
+# Move into the assembly directory so files end up here
+
+{
+    local $CWD = $dirname;
+
+    # Extract the LICENSE and README files
+
+    my @cmd = ( "tar", "xf", "../$tarball", "--strip-components=1", "$result" . "LICENSE" );
+    system(@cmd);
+
+    @cmd = ( "tar", "xf", "../$tarball", "--strip-components=1", "$result" . "README.md" );
+    system(@cmd);
+
+    # Now get the 2 .so files, and skip over all else
+
+    foreach my $fname ( 'libwasm_runtime.so', 'mod_wasm.so' ) {
+        system( 'wget', '-O', $fname, "https://github.com/vmware-labs/mod_wasm/releases/download/v$version/$fname" );
+    }
+}
+
+unlink $tarball;
+
+# assemble tarball file
+
+my @cmd = ( "tar", "czf", "SOURCES/$tarball", $dirname );
+system(@cmd);
+
+# remove the assembly dir
+
+@cmd = ( "rm", "-rf", $dirname );
+system(@cmd);
+
+print "New Version $version\n";
+print "SOURCES/$tarball has been created\n";
+
+# And we are done
+

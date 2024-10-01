@@ -1,0 +1,9 @@
+{
+    "adjust_install_file_src" : [
+        ["usr/lib64/libwasm_runtime.so", "debian/tmp/lib/libwasm_runtime.so"]
+    ],
+    "adjust_install_file_dst" : [
+        ["usr/lib64", "/lib"]
+    ]
+}
+
