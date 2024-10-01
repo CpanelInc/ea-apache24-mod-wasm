@@ -2,14 +2,11 @@
 
 ## How do I setup to use WASM on PHP.
 
-* Install `ea-apache24-mod-wasm`.
-* Then you need to download the version of PHP wasm module that you need.
-* [WASM module release](https://github.com/vmware-labs/webassembly-language-runtimes/releases)
-* Get the version of WASM for your version of PHP.
-* place it here:
-* `/usr/local/apache2/wasm_modules/php-wasm/php-cgi-8.2.6.wasm`
-* change the version as appropriate for your PHP.
-* Update your .htaccess as follows:
+1. Install `ea-apache24-mod-wasm`.
+1. Then you need to download the version of PHP wasm runtime that you need from * [WASM module release](https://github.com/vmware-labs/webassembly-language-runtimes/releases).
+1. Get the version of WASM for your version of PHP.
+1. Place `.wasm` file in `/usr/local/apache2/wasm_modules`
+1. Update your `.htaccess` as follows:
 
 ```
 <IfModule wasm_module>
