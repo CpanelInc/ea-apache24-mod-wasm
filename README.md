@@ -1,6 +1,6 @@
 # Mod WASM
 
-## How do I use a specific WASM runtime for my site?
+## How do I setup to use WASM on PHP.
 
 * Install `ea-apache24-mod-wasm`.
 * Then you need to download the version of PHP wasm module that you need.
