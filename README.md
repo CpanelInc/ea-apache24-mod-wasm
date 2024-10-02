@@ -1,5 +1,9 @@
 # Mod WASM
 
+## What is MOD_WASM?
+
+[Apache Con Description](https://www.apachecon.com/acna2022/slides/01_Gonz%C3%A1lez_mod-wasm_Bringing_WebAssembly.pdf)
+
 ## How do I setup to use WASM on PHP.
 
 1. Install `ea-apache24-mod-wasm`.
@@ -10,17 +14,12 @@
 
 ```
 <IfModule wasm_module>
-    <IfModule dir_module>
-        DirectoryIndex index.php
-    </IfModule>
-    <Location /wasm>
-        AddHandler wasm-handler .php
-        WasmModule /usr/local/apache2/wasm_modules/php-wasm/php-cgi-8.2.6.wasm
-        WasmDir    /tmp
-        WasmEnv TMPDIR /tmp
-        WasmMapDir / /
-        WasmEnableCGI On
-    </Location>
+    AddHandler wasm-handler .php
+    WasmModule /usr/local/apache2/wasm_modules/php-wasm/php-cgi-8.2.6.wasm
+    WasmDir    /tmp
+    WasmEnv TMPDIR /tmp
+    WasmMapDir / /
+    WasmEnableCGI On
 </IfModule>
 ```
 
