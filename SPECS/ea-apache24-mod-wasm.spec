@@ -14,6 +14,7 @@ Source: v%{version}.tar.gz
 Source1: 850_mod_wasm.conf
 
 Requires: ea-apache24
+Conflicts: ea-apache24-mod_ruid2
 
 %description
 mod_wasm is an extension module for the Apache HTTP Server (httpd) that enables the usage of WebAssembly (Wasm). This module allows the execution of certain tasks in the backend in a very efficient and secure way.
